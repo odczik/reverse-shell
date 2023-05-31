@@ -41,8 +41,8 @@
             cmdInput.disabled = false
             btn.disabled = false
 
-            
-            const ws = new WebSocket(`${window.location.protocol.endsWith(":s") ? "wss://" : "ws://"}` + window.location.host)
+
+            const ws = new WebSocket(`${window.location.protocol === "https:" ? "wss://" : "ws://"}` + window.location.host)
             //const ws = new WebSocket("ws://192.168.0.240:8080")
             //const ws = new WebSocket("wss://reverseshell-ondrejdostal007.b4a.run/")
             ws.onopen = (e) => {
