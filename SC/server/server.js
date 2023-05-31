@@ -11,7 +11,7 @@ server.listen(8080, () => console.log('Https running on port 8080'));
 
 const wss = new ws.Server({server, path: '/'});
 wss.on('connection', function connection(ws) { 
-    console.log('A new connection has been established.', ws);
+    console.log('A new connection has been established.', ws.url);
 
     ws.send('Hello');   
     ws.on('message', (data) => ws.send('Receive: ' + data));
