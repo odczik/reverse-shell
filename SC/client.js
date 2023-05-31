@@ -1,9 +1,9 @@
 var WebSocket = require('ws');
 //var ws = new WebSocket('wss://192.168.0.240:8080');
 var ws = new WebSocket('wss://reverseshell-ondrejdostal007.b4a.run/');
-ws.on('open', (data) => {
-    console.log(data)
-    //ws.send('something');
+ws.on('open', () => {
+    console.log("Websocket connection opened.")
+    ws.emit("message", "test")
 });
 ws.on('message', function(data, flags) {
   console.log(data.toString())
@@ -17,9 +17,7 @@ ws.on("upgrade", (data) => {
 ws.on("close", (data) => {
   console.log("Connection closed.", data)
 })
-ws.onerror((err) => {
-  console.log(err)
-})
+//ws.ping()
 ws.on("error", (err) => {
   console.log(err)
 })
