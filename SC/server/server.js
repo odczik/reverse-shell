@@ -9,7 +9,6 @@ let server = http.createServer((req, res) => {
         res.write(html)
         res.end()
     })
-    //res.end("hello world");
 });
 
 server.addListener('upgrade', (req) => console.log('UPGRADE:', req.url, "FROM:", `${req.socket.remoteAddress}:${req.socket.remotePort}`));
