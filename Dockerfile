@@ -1,5 +1,5 @@
 FROM node
-WORKDIR /SC
+WORKDIR /SC/server
 COPY . /
 RUN npm install ws
 ENV PORT 8080
