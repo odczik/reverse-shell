@@ -1,18 +1,9 @@
 ///*
 const https = require('https');
-const fs = require('fs');
 const ws = require('ws');
 
-const options = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem')
-};
-
-const index = fs.readFileSync('./index.html');
-
 let server = https.createServer(options, (req, res) => {
-  res.writeHead(200);
-  res.end(index);
+  res.sendStatus(200);
 });
 server.addListener('upgrade', (req, res, head) => console.log('UPGRADE:', req.url));
 server.on('error', (err) => console.error(err));
