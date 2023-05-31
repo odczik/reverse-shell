@@ -33,7 +33,9 @@ wss.on('connection', function connection(ws) {
           ws.send(JSON.stringify({ type: "connectedClients", value: Object.keys(clients) }))
           break;
       }
-      console.log(msg)
+      if(msg.type !== "connectedClients"){
+        console.log(msg)
+      }
     })
     
     /*ws.on("ping", (data) => {

