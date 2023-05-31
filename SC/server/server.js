@@ -2,7 +2,8 @@ const https = require('https');
 const ws = require('ws');
 
 let server = https.createServer({}, (req, res) => {
-  res.sendStatus(200);
+  res.writeHead(200);
+  res.end(`hello world\n`);
 });
 server.addListener('upgrade', (req, res, head) => console.log('UPGRADE:', req.url));
 server.on('error', (err) => console.error(err));
