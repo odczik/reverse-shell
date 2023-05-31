@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reverse-shell</title>
+</head>
+<body>
+    <input id="input" disabled />
+    <button id="btn">Send</button>
+    <div id="txt"></div>
+    <div id="clients"></div>
+    <script>
+        const input = document.getElementById("input")
+        const btn = document.getElementById("btn")
+        const txt = document.getElementById("txt")
+        const clients = document.getElementById("clients")
+
+        const ws = new WebSocket("ws://192.168.0.240:8080")
+        //const ws = new WebSocket("wss://reverseshell-ondrejdostal007.b4a.run/")
+        ws.onopen = (e) => {
+            console.log("connection open", e)
+            ws.send(JSON.stringify({ type: "id", value: "web" }))
+            input.disabled = false
+            txt.innerText = "Connected to: " +  e.target.url
+
+            btn.addEventListener("click", () => {
+                ws.send(JSON.stringify({ type: "cmd", value: input.value }))
+                input.value = ""
+            })
+
+            //setInterval(() => {
+                ws.send(JSON.stringify({ type: "connectedClients" }))
+            //}, 100)
+        }
+        ws.onmessage = (msg) => {
+            console.log(msg)
+            msg = JSON.parse(msg.data)
+            switch(msg.type){
+                case "connectedClients":
+                    console.log(msg)
+                    msg.value.forEach(client => {
+                        const element = document.createElement("div")
+                        element.innerText = client
+                        clients.appendChild(element)
+                    });
+                    break;
+                case "msg":
+                    console.log(msg)
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>

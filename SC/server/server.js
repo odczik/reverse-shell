@@ -1,23 +1,48 @@
 const http = require('http');
 const ws = require('ws');
+const fs = require('fs')
 
 let server = http.createServer((req, res) => {
-  res.writeHead(200);
-  res.end(`hello world\n`);
+    fs.readFile("./index.html", (err, html) => {
+        if(err) return console.log(err)
+        res.writeHead(200, {"Content-Type": "text/html"})
+        res.write(html)
+        res.end()
+    })
+    //res.end("hello world");
 });
-server.addListener('upgrade', (req, res, head) => console.log('UPGRADE:', req.url));
+
+server.addListener('upgrade', (req) => console.log('UPGRADE:', req.url, "FROM:", `${req.socket.remoteAddress}:${req.socket.remotePort}`));
 server.on('error', (err) => console.error(err));
 server.listen(8080, () => console.log('Https running on port 8080'));
 
+let clients = {}
 const wss = new ws.Server({server, path: '/'});
 wss.on('connection', function connection(ws) { 
     console.log('A new connection has been established.');
+    ws.send(JSON.stringify({ type: "msg", value: "Message from server" }));
 
-    ws.send('Hello');   
-    ws.on('message', (data) => {
-      console.log(data)
-      ws.send('Receive: ' + data)
-    });
+    ws.addEventListener("message", (msg) => {
+      msg = JSON.parse(msg.data)
+      switch(msg.type){
+        case "id":
+          ws.id = msg.value
+          clients[ws.id] = ws
+          break;
+        case "connectedClients":
+          ws.send(JSON.stringify({ type: "connectedClients", value: Object.keys(clients) }))
+          break;
+      }
+      console.log(msg)
+    })
+    
+    /*ws.on("ping", (data) => {
+      console.log(data.toString())
+    });*/
+    ws.on("close", (socket) => {
+      console.log("A connection has been closed.", socket, ws.id)
+      delete clients[ws.id]
+    })
 });
 
 /*const ws = Net.createServer();
