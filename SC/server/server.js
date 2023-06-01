@@ -27,9 +27,13 @@ wss.on('connection', function connection(ws) {
         case "id":
           ws.id = msg.value
           clients[ws.id] = ws
+          if(clients["web"]) clients["web"].send(JSON.stringify({ type: "connectedClients", value: Object.keys(clients) }))
           break;
         case "connectedClients":
           ws.send(JSON.stringify({ type: "connectedClients", value: Object.keys(clients) }))
+          break;
+        case "cmd":
+          if(clients[msg.to]) clients[msg.to].send(JSON.stringify({ type: "exec", value: msg.value }))
           break;
       }
       if(msg.type !== "connectedClients"){
@@ -43,6 +47,7 @@ wss.on('connection', function connection(ws) {
     ws.on("close", (socket) => {
       console.log("A connection has been closed.", socket, ws.id)
       delete clients[ws.id]
+       if(clients["web"]) clients["web"].send(JSON.stringify({ type: "connectedClients", value: Object.keys(clients) }))
     })
 });
 

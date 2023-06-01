@@ -56,10 +56,6 @@
                     ws.send(JSON.stringify({ type: "cmd", value: cmdInput.value, to: clientInput.value }))
                     cmdInput.value = ""
                 })
-
-                setInterval(() => {
-                    ws.send(JSON.stringify({ type: "connectedClients" }))
-                }, 100)
             }
 
             ws.onmessage = (msg) => {
@@ -76,6 +72,9 @@
                         break;
                     case "msg":
                         console.log(msg)
+                        break;
+                    case "exec":
+                        console.log(msg.value)
                         break;
                 }
             }
