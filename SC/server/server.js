@@ -43,38 +43,9 @@ wss.on('connection', function connection(ws) {
         console.log(msg)
       }
     })
-    
-    /*ws.on("ping", (data) => {
-      console.log(data.toString())
-    });*/
     ws.on("close", (socket) => {
       console.log("A connection has been closed.", socket, ws.id)
       delete clients[ws.id]
        if(clients["web"]) clients["web"].send(JSON.stringify({ type: "connectedClients", value: Object.keys(clients) }))
     })
 });
-
-/*const ws = Net.createServer();
-ws.listen(8080, function() {
-    console.log(`Server listening for connection requests on socket localhost:${port}`);
-});
-
-ws.on('connection', function(socket) {
-    var remoteAddress = socket.remoteAddress + ':' + socket.remotePort;  
-    console.log('A new connection has been established.', remoteAddress);
-
-    socket.write('Hello, client.');
-
-    socket.on('data', function(data) {
-        console.log('Client > ', data.toString());
-        ask("Send > ", socket)
-    });
-
-    socket.on('end', function() {
-        console.log('Closing connection with the client');
-    });
-
-    socket.on('error', function(err) {
-        console.log(`Error: ${err}`);
-    });
-});*/
