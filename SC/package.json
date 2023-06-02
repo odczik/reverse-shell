@@ -6,13 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "build": "pkg client.js -t latest-win-x64 -o Client.exe"
+    "build": "pkg client.js -t latest-win-x86 -o Client.exe",
+    "ncc": "ncc build client.js -m",
+    "test-build": "pkg dist/index.js -t latest-win-x86 -o Client.exe"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@vercel/ncc": "^0.36.1",
     "dotenv": "^16.1.3",
-    "express": "^4.18.2",
     "pkg": "^5.8.1",
     "ws": "^8.13.0"
   }
