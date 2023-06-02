@@ -5,9 +5,10 @@
   "main": "server.js",
   "scripts": {
     "start": "node server/server.js",
-    "build": "pkg client.js -t latest-win-x86 -o Client.exe",
+    "buildx86": "pkg client.js -t latest-win-x86 -o build/Client_x86.exe",
+    "buildx64": "pkg client.js -t latest-win-x86 -o build/Client_x64.exe",
     "ncc": "ncc build client.js -m",
-    "test-build": "pkg dist/index.js -t latest-win-x86 -o Client.exe"
+    "test-build": "pkg dist/index.js -t latest-win-x86 -o Client_test.exe"
   },
   "author": "",
   "license": "ISC",
