@@ -57,7 +57,7 @@ wss.on('connection', function connection(ws) {
                 if(msg.check){
                     ws.send(JSON.stringify({type: "ksw", ksw: data}))
                 } else {
-                    if(data){
+                    if(data == 1){
                         fs.writeFile('./killswitch', '0', (err) => {
                             if(err) console.log(err)
                         });
