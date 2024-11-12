@@ -39,7 +39,7 @@ wss.on('connection', function connection(ws) {
         try {
             msg = JSON.parse(msg.data);
         } catch {
-            ws.close();
+            ws.terminate();
         }
         switch(msg.type){
             case "id":
