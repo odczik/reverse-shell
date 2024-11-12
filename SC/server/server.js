@@ -36,7 +36,11 @@ wss.on('connection', function connection(ws) {
     ws.send(JSON.stringify({ type: "msg", value: "Message from server" }));
 
     ws.addEventListener("message", (msg) => {
-        msg = JSON.parse(msg.data)
+        try {
+            msg = JSON.parse(msg.data);
+        } catch(){
+            ws.close();
+        }
         switch(msg.type){
             case "id":
                 if(msg.accessCode !== process.env.ACCESSCODE) return ws.send(JSON.stringify({ type: "accessDenied" }))
