@@ -38,7 +38,8 @@ wss.on('connection', function connection(ws) {
     ws.addEventListener("message", (msg) => {
         try {
             msg = JSON.parse(msg.data);
-        } catch {
+        } catch(e) {
+            console.error(e.message);
             return ws.terminate();
         }
         switch(msg.type){
