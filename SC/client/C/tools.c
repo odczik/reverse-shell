@@ -1,4 +1,6 @@
 #include <libwebsockets.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
 
 // Function to dynamically escape special characters in a JSON string
 char *escape_json(const char *input) {
@@ -51,4 +53,29 @@ char *escape_json(const char *input) {
     escaped[j] = '\0';  // Null-terminate the escaped string
 
     return escaped;  // Caller must free the memory allocated
+}
+
+char *base64_encode(const unsigned char *input, int length) {
+    BIO *b64 = BIO_new(BIO_f_base64());
+    BIO *bmem = BIO_new(BIO_s_mem());
+    b64 = BIO_push(b64, bmem);
+
+    // Disable newline character in output
+    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
+
+    // Write the data to the BIO chain
+    BIO_write(b64, input, length);
+    BIO_flush(b64);
+
+    // Get the memory pointer from the BIO and copy it to a C string
+    BUF_MEM *buffer_ptr;
+    BIO_get_mem_ptr(b64, &buffer_ptr);
+    char *encoded_data = (char *)malloc(buffer_ptr->length + 1);
+    memcpy(encoded_data, buffer_ptr->data, buffer_ptr->length);
+    encoded_data[buffer_ptr->length] = '\0';
+
+    // Clean up
+    BIO_free_all(b64);
+
+    return encoded_data;
 }

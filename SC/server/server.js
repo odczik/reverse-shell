@@ -36,12 +36,17 @@ wss.on('connection', function connection(ws) {
     ws.send(JSON.stringify({ type: "msg", value: "Message from server" }));
 
     ws.addEventListener("message", (msg) => {
-        //console.log(msg.data.toString())
         try {
             msg = JSON.parse(msg.data);
-        } catch(e) {
-            return console.error(e);
-            //return ws.close();
+        } catch {
+            try {
+                msg = msg.data.toString("ascii") // Convert the buffer to a base64 string
+                msg = Buffer.from(msg, "base64").toString("ascii") // Convert the base64 string to a JSON string
+                msg = JSON.parse(msg); // Parse the JSON string
+                console.log(msg)
+            } catch {
+                return ws.terminate();
+            }
         }
         switch(msg.type){
             case "id":

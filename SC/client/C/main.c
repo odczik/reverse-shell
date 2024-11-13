@@ -3,11 +3,12 @@
 #include <signal.h>
 #include <windows.h>
 #include <lmcons.h>
+#include <stdlib.h>
 
 #include "auth.h"
 #include "tools.h"
 
-char msg[512];
+char msg[8192];
 char* splitMsg = NULL;
 
 int sentId = 0;
@@ -31,13 +32,18 @@ void send_message(struct lws *wsi, const char *value) {
     strncat(msg_to_send, json_msg, sizeof(msg_to_send) - strlen(msg_to_send) - 1);
     strncat(msg_to_send, "\", \"to\": \"web\" }", sizeof(msg_to_send) - strlen(msg_to_send) - 1);
 
+    // Encode the message in Base64
+    char *encoded_msg = base64_encode((unsigned char *)msg_to_send, strlen(msg_to_send));
+
     // Allocate a buffer for the message with LWS_PRE bytes padding for the header
-    size_t msg_len = strlen(msg_to_send);
+    size_t msg_len = strlen(encoded_msg);
     unsigned char buf[LWS_PRE + 512];
-    memcpy(&buf[LWS_PRE], msg_to_send, msg_len);
+    memcpy(&buf[LWS_PRE], encoded_msg, msg_len);
+
+    free(encoded_msg);
 
     // Send the message
-    printf("Sending: %s\n", msg_to_send);
+    printf("Sending: %s ", msg_to_send);
     int bytes_sent = lws_write(wsi, &buf[LWS_PRE], msg_len, LWS_WRITE_BINARY);
     if (bytes_sent < (int)msg_len) {
         printf("Failed to send message completely\n");
