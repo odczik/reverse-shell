@@ -38,7 +38,7 @@ void send_message(struct lws *wsi, const char *value) {
 
     // Send the message
     printf("Sending: %s\n", msg_to_send);
-    int bytes_sent = lws_write(wsi, &buf[LWS_PRE], msg_len, LWS_WRITE_TEXT);
+    int bytes_sent = lws_write(wsi, &buf[LWS_PRE], msg_len, LWS_WRITE_BINARY);
     if (bytes_sent < (int)msg_len) {
         printf("Failed to send message completely\n");
     } else {
@@ -130,8 +130,10 @@ static int callback_echo(struct lws *wsi, enum lws_callback_reasons reason,
                 send_message(wsi, splitMsg);
                 splitMsg = strtok(NULL, "\n");
             } else {
+                msg[0] = '\0';
                 free(splitMsg);
             }
+            // printf("%s ; %s\n", msg, splitMsg);
 
             lws_callback_on_writable(wsi);
             break;
