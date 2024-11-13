@@ -1,0 +1,1 @@
+char *escape_json(const char *input);

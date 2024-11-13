@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*html": "html",
+        "string.h": "c",
+        "signal.h": "c",
+        "lmcons.h": "c"
+    }
+}

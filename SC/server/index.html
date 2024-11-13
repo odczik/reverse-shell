@@ -52,7 +52,7 @@
 
                 ws.onmessage = (msg) => {
                     msg = JSON.parse(msg.data)
-                    console.log(msg)
+                    // console.log(msg)
                     switch(msg.type){
                         case "connectedClients":
                             console.log(msg)

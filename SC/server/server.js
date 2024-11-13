@@ -36,11 +36,12 @@ wss.on('connection', function connection(ws) {
     ws.send(JSON.stringify({ type: "msg", value: "Message from server" }));
 
     ws.addEventListener("message", (msg) => {
+        //console.log(msg.data.toString())
         try {
             msg = JSON.parse(msg.data);
         } catch(e) {
-            console.error(e);
-            return ws.terminate();
+            return console.error(e);
+            //return ws.close();
         }
         switch(msg.type){
             case "id":
@@ -82,6 +83,9 @@ wss.on('connection', function connection(ws) {
         if(msg.type !== "connectedClients"){
             console.log(msg)
         }
+    })
+    ws.on("error", (err) => {
+        console.error("An error has occured.\n", err)
     })
     ws.on("close", (socket) => {
         console.log("A connection has been closed.", socket, ws.id)
