@@ -8,8 +8,8 @@
 #include "auth.h"
 #include "tools.h"
 
-char msg[8192];
-char* splitMsg = NULL;
+char *msg = NULL;
+size_t msg_size = 0;
 
 int sentId = 0;
 
@@ -20,12 +20,12 @@ static void sigint_handler(int sig) {
 }
 
 // Function to send a message
-void send_message(struct lws *wsi, const char *value) {
-    char msg_to_send[512];
+void send_message(struct lws *wsi) {
+    char msg_to_send[msg_size + 64];
 
     // Create the JSON message dynamically with the escaped value
-    char json_msg[512];
-    snprintf(json_msg, sizeof(json_msg), "%s", value);
+    char json_msg[msg_size + 64];
+    snprintf(json_msg, sizeof(json_msg), "%s", msg);
 
     // Create the full message with the JSON message
     snprintf(msg_to_send, sizeof(msg_to_send), "{ \"type\": \"cmd\", \"value\": \"");
@@ -37,7 +37,7 @@ void send_message(struct lws *wsi, const char *value) {
 
     // Allocate a buffer for the message with LWS_PRE bytes padding for the header
     size_t msg_len = strlen(encoded_msg);
-    unsigned char buf[LWS_PRE + 512];
+    unsigned char buf[LWS_PRE + msg_size + 64];
     memcpy(&buf[LWS_PRE], encoded_msg, msg_len);
 
     free(encoded_msg);
@@ -50,10 +50,15 @@ void send_message(struct lws *wsi, const char *value) {
     } else {
         printf("Message sent.\n");
     }
+
+    // Free the message buffer
+    free(msg);
+    msg = NULL;
+    msg_size = 0;
 }
 
 void execute(const char *command, struct lws *wsi) {
-    char buffer[128];
+    char buffer[256];
     FILE *fp = _popen(command, "r");
     if (fp == NULL) {
         printf("Failed to run command\n");
@@ -64,22 +69,33 @@ void execute(const char *command, struct lws *wsi) {
         // Escape the value to handle any special characters
         char *escaped_value = escape_json(buffer);
         if (!escaped_value) {
+            free(msg);
+            _pclose(fp);
             return;  // Handle memory allocation failure
         }
 
-        strncat(msg, escaped_value, sizeof(msg) - strlen(msg) - 1);
-        strncat(msg, "\n", sizeof(msg) - strlen(msg) - 1);
+        size_t new_size = msg_size + strlen(escaped_value) + 1;
+        char *new_msg = (char*)realloc(msg, new_size);
+        if (!new_msg) {
+            free(msg);
+            free(escaped_value);
+            _pclose(fp);
+            return;  // Handle memory allocation failure
+        }
+
+        msg = new_msg;
+        strcpy(msg + msg_size, escaped_value);
+        msg_size += strlen(escaped_value);
 
         free(escaped_value);
     }
-    splitMsg = strtok(msg, "\n");
 
     _pclose(fp);
 }
 
 void handle_message(const char *json_data, struct lws *wsi) {
     char type[16] = {0};  // Buffer for "type" value
-    char value[64] = {0}; // Buffer for "value" value
+    char value[128] = {0}; // Buffer for "value" value
 
     // Find the "type" key and extract the value
     const char *type_start = strstr(json_data, "\"type\":\"");
@@ -132,14 +148,9 @@ static int callback_echo(struct lws *wsi, enum lws_callback_reasons reason,
                 sentId = 1;
             }
 
-            if (splitMsg != NULL) {
-                send_message(wsi, splitMsg);
-                splitMsg = strtok(NULL, "\n");
-            } else {
-                msg[0] = '\0';
-                free(splitMsg);
+            if(msg_size){
+                send_message(wsi);
             }
-            // printf("%s ; %s\n", msg, splitMsg);
 
             lws_callback_on_writable(wsi);
             break;
@@ -213,7 +224,8 @@ int establish_connection(){
     }
 
     while (!interrupted) {
-        lws_service(context, 100);
+        lws_service(context, 1000);
+        Sleep(1);
     }
 
     lws_context_destroy(context);
