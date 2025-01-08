@@ -84,6 +84,24 @@ wss.on('connection', function connection(ws) {
                     })
                 }
                 break;
+            case "silly_remote":
+                // let control_array = Array(6).fill(0, 0);
+                let control_array = fs.readFileSync("./silly_remote/index.html", "utf8");
+
+                control_array = control_array.split("");
+                for(let i = 0; i < control_array.length; i++){
+                    control_array[i] = Number(control_array[i]);
+                }
+
+                control_array[msg.payload] = !control_array[msg.payload];
+
+                control_array = control_array.join().replaceAll(",", "");
+
+                fs.writeFileSync('./silly_remote/index.html', control_array, (err) => {
+                    if(err) console.log(err)
+                });
+                
+                break;
         }
         if(msg.type !== "connectedClients"){
             console.log(msg)
